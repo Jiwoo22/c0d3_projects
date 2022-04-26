@@ -1,0 +1,160 @@
+<div class="container"></div>
+
+<style>
+.container {
+    display: flex;
+    justify-content: space-between;
+    margin: 30px;
+}
+.box {
+    width: 302px;
+
+}
+.header {
+    padding: 10px;
+    color: white;
+    text-align: center;
+}
+.todo {
+    display: flex;
+    background: rgba(201, 200, 200, 0.40);
+    padding: 10px;
+    margin-bottom: 5px;
+}
+.content {
+    width: 86%;
+    margin-left: 10px;
+    margin-right:10px;
+    word-wrap: break-word
+}
+.inputArea {
+    display: flex;
+}
+</style>
+
+<script>
+    const container = document.querySelector('.container')
+
+    const initial_data = [
+        {title: 'To-Do', color: '#35235D', list:[]},
+        {title: 'Doing', color: '#CB2402', list:[]},
+        {title: 'Done', color: '#4C49A2', list:[]},
+        {title: 'Approved', color: '#A31A48', list:[]},
+    ]
+
+    const move_list = (direction, board_idx, item_idx, input) => {
+        if(direction === 'right'){
+            data[board_idx].list.splice(item_idx,1)
+            data[board_idx + 1].list.push(input)
+        }
+        if(direction === 'left'){
+            data[board_idx].list.splice(item_idx,1)
+            data[board_idx - 1].list.push(input)
+        }
+    }
+
+    const render = (element) => {
+        localStorage.setItem('Kanban_data',JSON.stringify(data))
+        container.innerHTML =''
+        data.forEach((e, i) => Board(i))
+    }
+
+    const Board = (board_idx) => {
+        const item = data[board_idx]
+        const element = document.createElement('div')
+        container.append(element)
+        element.innerHTML = `
+            <div class="box">
+            <div class="header">${item.title}</div>
+            <div class="todoContainer"></div>
+            <div class="inputArea">
+                <textarea class="textInput" name="" cols="38" rows="5"></textarea>
+                <button class="submit">Submit</button>
+            </div>
+            </div>
+        `
+        const header = element.querySelector('.header')
+        header.style.background = item.color
+
+        const textInput = element.querySelector('.textInput')
+        const submit = element.querySelector('.submit')
+        const todoContainer = element.querySelector('.todoContainer')
+
+        submit.addEventListener('click', () => {
+            const content = textInput.value
+            item.list.push(content)
+            render(element)
+        })
+
+        item.list.forEach((eachTodo, item_idx) => {
+            new Todo(todoContainer,eachTodo, item.title, item_idx, board_idx)
+        })
+    }
+
+    const data = JSON.parse(localStorage.getItem('Kanban_data')) || initial_data
+    data.forEach((e, i) => Board(i))
+
+    function Todo (todoContainer, input, title, item_idx, board_idx) {
+        const element = document.createElement('div')
+        element.classList.add('todo')
+        element.classList.add(`${item_idx}`)
+        todoContainer.append(element)
+        
+         if(board_idx == 0){
+            element.innerHTML = `
+            <div class="content">${input}</div>
+            <div class="pointer right">></div>
+            `
+        }
+        else if (board_idx == 3){
+            element.innerHTML = `
+            <div class="pointer left"><</div>
+            <div class="content">${input}</div>
+            `
+        }
+        else{
+            element.innerHTML = `
+            <div class="pointer left"><</div>
+            <div class="content">${input}</div>
+            <div class="pointer right">></div>
+            `
+        }
+
+        const content = element.querySelector('.content')
+        content.addEventListener('click', () => {
+            const answer = confirm(`Are you sure you want to remove ${input}?`)
+            if(answer){
+                data[board_idx].list.splice(item_idx,1)
+                render(element)
+            }
+        })
+
+        const pointer = element.querySelectorAll('.pointer')
+
+        if(pointer.length === 1){
+            if(pointer[0].classList.contains('left')){
+                pointer[0].addEventListener('click', () => {
+                    move_list('left', board_idx, item_idx, input)
+                    render(element)
+                })
+            }
+            if(pointer[0].classList.contains('right')){
+                pointer[0].addEventListener('click', () => {
+                    move_list('right', board_idx, item_idx, input)
+                    render(element)
+                })
+            }
+        }
+        else{
+            pointer[0].addEventListener('click', () => {
+                move_list('left', board_idx, item_idx, input)
+                render(element)
+            })
+            pointer[1].addEventListener('click', () => {
+                move_list('right', board_idx, item_idx, input)
+                render(element)
+            })
+        }
+    }
+
+</script>

@@ -1,0 +1,79 @@
+<html>
+    <head>
+        <script src="https://kit.fontawesome.com/0592a8da0a.js" crossorigin="anonymous"></script>
+    </head>
+    <div class="container"></div>
+    <div>You <span id = "verb">are giving </span><span id = "number">0</span> Stars!</div>
+</html>
+
+<style>
+.container {
+    display: flex;
+    margin-bottom: 15px;
+}
+.fas {
+    color: yellow;
+    -webkit-text-stroke-width: 3px;
+    -webkit-text-stroke-color: black;
+}
+</style>
+
+<script>
+    const container = document.querySelector('.container');
+    const number = document.getElementById('number')
+    const verb = document.getElementById('verb')
+
+    let locked = false;
+    container.onmouseenter = () => {
+        locked = false;
+        verb.innerText = "are giving "
+    }
+    function Star (idx) {
+        const element = document.createElement('div')
+        
+        let icon = `<i class="far fa-star fa-2x"></i>` //turn off
+        element.innerHTML = icon
+        container.append(element)
+        const iconElement = element.querySelector('.fa-star')
+
+        this.turnOn = () => {
+            iconElement.classList.remove('far')
+            iconElement.classList.add('fas')
+        }
+
+        this.turnOff = () => {
+            iconElement.classList.remove('fas')
+            iconElement.classList.add('far')
+        }
+
+        element.addEventListener('mouseover', () => {
+            if(locked){
+                return
+            }
+            const selected = idx
+            number.innerText = selected + 1
+
+            stars.forEach( (s, i) => {
+                if(i <= selected){
+                    return s.turnOn()
+                }
+                return s.turnOff()
+            })
+        }, false)
+
+        element.addEventListener('click', () => {
+            verb.innerText = 'have given '
+            locked = true;
+        },false)
+
+    }
+
+    const stars = [
+        new Star(0),
+        new Star(1),
+        new Star(2),
+        new Star(3),
+        new Star(4)
+    ]
+
+</script>

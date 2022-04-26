@@ -1,0 +1,68 @@
+<style>
+    .user {
+        color:blue;
+    }
+</style>
+<h1></h1>
+<input type="text">
+<hr>
+<div class="container"></div>
+
+<script>
+    const title = document. querySelector('h1')
+    const roomName = window.location.pathname.replace('/', '')
+    title.innerText = roomName
+    const userInfo = JSON.parse(localStorage.getItem('usersession') || '{}')
+    const container = document.querySelector('.container')
+
+    const getData = () => {
+        fetch(`api/messages?roomName=${roomName}`, {
+            headers: {
+                Authorization: `Bearer ${userInfo.jwt}`
+            }
+        }).then( r => {
+            return r.json() 
+        }).then( messages => {
+            console.log(messages)
+            container.innerHTML = messages.reduce((acc, data) => {
+                return acc + `
+                <div>
+                <span class="user">${data.username}</span> : ${data.message}
+                </div>
+            `
+            }, '')
+
+            setTimeout( () => {
+              getData()
+            }, 1000)
+        })
+    }
+    getData()
+
+    const startChat = () => {
+        const input = document. querySelector('input')
+        input.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                fetch('api/messages', {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                        Authorization: `Bearer ${userInfo.jwt}`
+                    },
+                    body: JSON.stringify({
+                    roomName,
+                    message: input.value
+                    })
+                }) 
+                input.value = '' 
+            }
+        })
+    }
+
+
+    if (!userInfo.username || !userInfo.jwt) {
+        window.location = '/'
+    } else {
+        startChat()
+    }
+</script>

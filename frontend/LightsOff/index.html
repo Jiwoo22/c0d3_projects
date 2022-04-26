@@ -1,0 +1,116 @@
+<style>
+.container {
+    width: 100px;
+}
+.box {
+    display : inline-block;
+    border: 1px solid rgba(0, 0, 0, 1);
+    background: rgba(10, 10, 10, 0.5);
+    width: 50px;
+    height: 50px;
+    margin-top: 3px;
+    box-sizing: border-box;
+}
+.box.active {
+    background: yellow;
+}
+
+</style>
+
+<div class="container"></div>
+
+<script>
+    const container = document.querySelector('.container')
+
+    let lightup_box = 0 
+
+    function Box (row, col, val) {
+        this.row = row
+        this.col = col
+
+        const coord = [row, col]
+
+        const element = document.createElement('div')
+        element.classList.add('box', `row${row}`, `col${col}`)
+
+        element.addEventListener('click', () => {
+            if(element.classList.contains('active')){
+                trigger_neighbors(coord, val)
+                lightup_box -= 1
+                check_lightupbox()
+                return element.classList.remove('active')
+            }
+        })
+        container.append(element)
+    }
+
+    const makeBoxes = (value, row = 0, col = 0) => {
+        if(row === value){
+            return 
+        }
+        if(col === value){
+            return makeBoxes(value, row + 1, 0)
+        }
+        new Box(row, col, value)
+        return makeBoxes(value, row, col + 1)        
+    }
+
+    const chooseRandom = (value) => {
+        const rand_row = Math.floor(Math.random() * value)
+        const rand_col = Math.floor(Math.random() * value)
+        const randArr = [rand_row, rand_col]
+        return randArr
+    }
+
+    const toggle = (coord) => {
+        const row = coord[0]
+        const col = coord[1]
+
+        const element = document.querySelector(`.row${row}.col${col}`)
+        if(element.classList.contains('active')){
+            lightup_box -= 1
+            return element.classList.remove('active')
+        }
+        lightup_box += 1
+        return element.classList.add('active')
+    }
+
+
+    const trigger_neighbors = (coord, val) => {
+        const row = coord[0]
+        const col = coord[1]
+
+        if(col - 1 > -1){
+            toggle([row, col - 1])
+        }
+        if(col + 1 < val){
+            toggle([row, col + 1])
+        }
+        if(row - 1 > -1){
+            toggle([row - 1, col])
+        }
+        if(row + 1 < val){
+            toggle([row + 1, col])
+        }
+    }
+
+    const check_lightupbox = () => {
+        if(lightup_box === 0){
+            new_val = +prompt('You won! Play again with different size? 0 to stop playing' ,'')
+            if(new_val > 0){
+                start(new_val)
+            }
+        }  
+    }
+
+    const start = (val = 2) => {
+        container.innerHTML = ''
+        const rand_box = chooseRandom(val)
+        const width = 50 * val
+        container.style.width = `${width}px`
+        makeBoxes(val)
+        toggle(rand_box)
+    }
+    start()
+
+</script>

@@ -1,0 +1,31 @@
+<body>
+  <h1>Text Extraction</h1>
+  <h3></h3>
+  <div class="container"></div>
+  <script>
+    const container = document.querySelector(".container");
+    const h3 = document.querySelector("h3");
+    const jobId = window.location.pathname.split("/")[2];
+    const getJobs = () => {
+      fetch(`/api/jobs/${jobId}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.isDone) {
+            h3.innerText = "finished processing!";
+          }
+          if (data.processed.length > 0) {
+            container.innerHTML = data.processed.reduce((acc, each) => {
+              return acc + `<hr><div>${each}</div>`;
+            }, "");
+          }
+          if (!data.isDone) {
+            h3.innerText = "processing...";
+            setTimeout(() => {
+              getJobs();
+            }, 500);
+          }
+        });
+    };
+    getJobs();
+  </script>
+</body>

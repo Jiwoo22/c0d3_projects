@@ -1,0 +1,68 @@
+<script>
+    const Auth = {}
+    const endpoint = 'http://localhost:8000'
+    const authContainer = (type) => {
+        const url = `${endpoint}/api/${type}`
+        return (userInfo) => {
+            const data = { ...userInfo }
+            
+            const pwd = data.password
+            const username = data.username
+            const email = data.email
+
+            if(!pwd || pwd.length <= 5) {
+                return console.log("Password cannot be less than 5 characters");
+            }
+
+            if(!username || !/^[a-z0-9]+$/i.test(username)) {
+                return console.log("Username cannot be empty or non-alphanumeric")
+            }
+
+            if(email) {
+                if(!email.includes("@")){
+                    return console.log("Email format is wrong")
+                }
+            }
+
+            data.password = btoa(data.password)
+
+            return fetch(url, {
+                credentials: 'include',
+                headers: {
+                    'content-type' : 'application/json'
+                },
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(r => {
+                console.log('res', r)
+                saveToken(r)
+            })
+        }
+    }
+    Auth.login = authContainer('session')
+    Auth.signup = authContainer('users')
+    Auth.getSession = () => {
+        const token = localStorage.getItem('token')
+        return fetch(`${endpoint}/api/session`, {
+            credentials: 'include',
+            headers: {
+                'Authorization' : `Bearer ${token}`
+            },
+        }).then(r => r.json())
+        .then((data) => {
+            console.log(`Welcome ${data.username}`)
+        })
+    }
+
+    window.Auth = Auth
+    
+    const saveToken = (data) => {
+        if(data.token){
+            localStorage.setItem('token', data.token)
+        }
+        return
+    }
+
+</script>

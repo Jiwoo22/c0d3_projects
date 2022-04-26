@@ -1,0 +1,51 @@
+<style>
+  .container {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: hotpink;
+    text-align: center;
+  }
+  .container.dropping {
+    background-color: aquamarine;
+  }
+</style>
+
+<h1 class="container">Drag files and drop here</h1>
+<script>
+  const container = document.querySelector(".container");
+
+  container.addEventListener("dragover", (e) => {
+    container.classList.add("dropping");
+    container.innerText = "drop the file";
+    e.preventDefault();
+  });
+
+  container.addEventListener("drop", (e) => {
+    e.preventDefault();
+
+    const files = Array.from(e.dataTransfer.files);
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("userFiles", file, file.name);
+    });
+
+    fetch("/api/files", {
+      method: "POST",
+      body: formData,
+    })
+      .then((r) => r.text())
+      .then((url) => {
+        console.log(url);
+        container.innerHTML = `
+            <a href="${url}" target="_blank">${url}</a>
+            `;
+      });
+    container.classList.remove("dropping");
+  });
+</script>

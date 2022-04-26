@@ -1,0 +1,80 @@
+<style>
+  .fas {
+    color: pink;
+  }
+  .on {
+    color: #ff69b4;
+  }
+</style>
+<head>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/andybrewer/mvp/mvp.css"
+  />
+  <script
+    src="https://kit.fontawesome.com/0592a8da0a.js"
+    crossorigin="anonymous"
+  ></script>
+</head>
+<body style="margin: 10; padding: 0">
+  <h1 class="logo-1">Selfie Queen</h1>
+  <video class="video"></video>
+  <i class="fas fa-camera-retro fa-5x"></i>
+  <canvas class="canvas"></canvas>
+  <hr />
+  <h3>Images</h3>
+  <div class="container"></div>
+</body>
+
+<script>
+  const constraints = { audio: false, video: { width: 1280, height: 720 } };
+  const video = document.querySelector("video");
+  const canvas = document.querySelector("canvas");
+  const context = canvas.getContext("2d");
+  const container = document.querySelector(".container");
+  const icon = document.querySelector("i");
+
+  navigator.mediaDevices
+    .getUserMedia(constraints)
+    .then(function (mediaStream) {
+      video.srcObject = mediaStream;
+      video.onloadedmetadata = function (e) {
+        video.play();
+      };
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+
+  icon.addEventListener("click", () => {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+    const selfieData = canvas.toDataURL().split(",")[1];
+    fetch("/api/selfies", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        imgData: selfieData,
+      }),
+    })
+      .then((r) => r.text())
+      .then((img) => {
+        console.log(img);
+        const element = document.createElement("div");
+        element.innerHTML = `<a href='/api/selfies/${img}' target='_blank'>${img}</a>`;
+        container.append(element);
+      });
+  });
+
+  icon.addEventListener("mouseover", () => {
+    icon.classList.remove("far");
+    icon.classList.add("on");
+  });
+  icon.addEventListener("mouseleave", () => {
+    icon.classList.remove("on");
+    icon.classList.add("far");
+  });
+</script>

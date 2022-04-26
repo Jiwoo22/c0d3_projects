@@ -1,0 +1,168 @@
+<style>
+.container {
+    width: 520px;
+}
+.box {
+    display: inline-block;
+    border: 4px solid rgba(106, 137, 216, 0.5);
+    width: 100px;
+    height: 100px;
+    box-sizing: border-box;
+    margin: 2px;
+    z-index: 1
+}
+.box.active {
+    background: rgba(105, 215, 195, 0.7);
+}
+.grey {
+    background: rgba(155, 155, 155, 0.5);
+    z-index: 2;
+    border: 1px solid blue;
+    position: fixed;
+    pointer-events: none;
+}
+
+</style>
+<div class='container'></div>
+<div class='grey'></div>
+<script>
+    const container = document.querySelector('.container')
+    const grey_box = document.querySelector('.grey')
+
+    let isDragging = false
+
+    let startingPos = {
+        position:[],
+        box:[]
+    }
+    let currentPos = {
+        position:[],
+        box:[]
+    }
+
+    //make grey area as you drag
+    container.addEventListener('mousedown', (e) => {
+        startingPos.position = [e.clientX, e.clientY]
+        
+        container.addEventListener('mousemove', (e) => {
+            currentPos.position = [e.clientX, e.clientY]
+            const area = select_area(startingPos, currentPos)
+
+            grey_box.style.top = area.top
+            grey_box.style.left = area.left
+            
+            grey_box.style.width = Math.abs(startingPos.position[0] - currentPos.position[0])
+            grey_box.style.height = Math.abs(startingPos.position[1] - currentPos.position[1])
+        })
+    })
+
+    //clear the grey area as mouse up
+    container.addEventListener('mouseup',(e) => {
+            isDragging = false
+            grey_box.style.width = null
+            grey_box.style.height = null
+    })
+
+    function Box(row, col) {
+        this.row = row
+        this.col = col
+
+        const element = document.createElement('div')
+        element.classList.add('box')
+        element.classList.add(`row${row}`)
+        element.classList.add(`col${col}`)
+        container.append(element)
+
+        this.turn_blue = () => {
+            element.classList.add ('active')
+        }
+
+        this.turn_off = () => {
+            element.classList.remove ('active')
+        }
+
+        element.addEventListener('mousedown', (e) => {
+            unselect_box()//initialize by turning off all boxes
+            isDragging = false
+            startingPos.position = [e.clientX, e.clientY]
+            startingPos.box = [row, col]
+            currentPos = {}
+
+            element.addEventListener('mousemove', (e) => {
+                if(!(e.clientY === startingPos[1] && e.clickX === startingPos[0])){
+                    isDragging = true
+                    select_box(e,startingPos, row, col)
+                }
+            })
+        })
+
+        element.addEventListener('mousemove', (e) => {
+            if(isDragging){
+                select_box(e,startingPos, row, col)
+            }
+        })
+
+        element.addEventListener('mouseup', (e) => {
+            isDragging = false
+            startingPos = {}
+        })
+    }
+
+    //calculate selected area based one start and current mouse positions
+    const select_area = (startingPos, currentPos, result = {}) => {
+        if(startingPos.position[1] > currentPos.position[1]){
+            result.rows = [currentPos.box[0], startingPos.box[0]]
+            result.top = currentPos.position[1]
+        }
+        else{
+            result.rows = [startingPos.box[0], currentPos.box[0]]
+            result.top = startingPos.position[1]
+        }
+
+        if(startingPos.position[0] > currentPos.position[0]){
+            result.cols = [currentPos.box[1], startingPos.box[1]]
+            result.left = currentPos.position[0]
+        }
+        else{
+            result.cols = [startingPos.box[1], currentPos.box[1]]
+            result.left = startingPos.position[0]
+        }
+        return result
+    }
+
+    //change the color of selected boxes
+    const select_box = (e,startingPos, row, col) => {
+        currentPos.position = [e.clientX, e.clientY]
+        currentPos.box = [row, col]
+
+        const area = select_area(startingPos,currentPos)
+        allBoxes.map((box) =>{
+            if(box.row >= area.rows[0] && box.row <= area.rows[1]){
+                if(box.col >= area.cols[0] && box.col <= area.cols[1]){
+                    box.turn_blue()
+                }
+            }
+        })
+    }
+
+    const unselect_box = () => {
+        allBoxes.map((box) => {
+            box.turn_off()
+        })
+    }
+
+    //display boxes
+    const make_box = (row = 0, col = 0, list = []) => {
+        if(row === 5){
+            return list
+        }
+        if(col === 5){
+            return make_box(row + 1, 0, list)
+        }
+        list.push(new Box(row, col))
+        return make_box(row, col + 1, list)
+    }
+
+    const allBoxes = make_box() //render boxes
+
+</script>

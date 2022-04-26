@@ -1,0 +1,72 @@
+<style>
+
+    .smallContainer {
+        margin: auto;
+        width:421px;
+        height: 168;
+        overflow: hidden;
+        top: 0;
+    }
+    .circleContainer {
+        position: fixed;
+        border-radius: 50%;
+        width: 199px;
+        height: 199px;
+        pointer-events: none;
+        overflow: hidden;
+        display: none;
+    } 
+    .bigImage {
+        position: absolute;
+        top: 0;
+        left:0;
+    }
+    .scope {
+        position: absolute;
+        top:0;
+        left:0;
+    }
+    
+    </style>
+    <div class="smallContainer">
+        <img class="small" src="https://c0d3.com/challenges/assets/fair/small.jpg" alt ="">
+    </div>
+    <div class="circleContainer">
+        <img class="bigImage" src="https://c0d3.com/challenges/assets/fair/big.jpg" alt="">
+        <img class="scope" src="https://c0d3.com/challenges/assets/fair/scope.png" alt="">
+    </div>
+    
+    
+    <script>
+        const small = document.querySelector('.smallContainer')
+        const scope= document.querySelector('.circleContainer')
+        const bigImage = document.querySelector('.bigImage')
+    
+        small.addEventListener('mousemove', (e) => {
+    
+            scope.style.display = 'block';
+    
+            const bigX = e.clientX - 100
+            const bigY = e.clientY - 100
+    
+            scope.style.top = `${bigY}px`
+            scope.style.left = `${bigX}px`
+    
+            const ratioX = 1263/421
+            const ratioY = 503/168
+    
+            const positionX =  -1 * (e.clientX - 279.5)* ratioX  + 670
+            const positionY = -1 * (e.clientY - 8) * ratioY + 100
+    
+            bigImage.style.left = `${positionX}px`
+            bigImage.style.top = `${positionY}px`
+    
+        })
+    
+        small.addEventListener('mouseleave', (e) => {
+            scope.style.display = 'none';
+        })
+    </script>
+    
+    
+    
